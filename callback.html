@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script>window.INSIGHTA_API_URL = 'http://127.0.0.1:8000';</script>
+  <title>Logging in… — Insighta Labs+</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background: #0b0d14;
+      color: #e4e6f4;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh
+    }
+
+    .box {
+      text-align: center
+    }
+
+    .spin {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      border: 3px solid #2a2f55;
+      border-top-color: #6c63ff;
+      border-radius: 50%;
+      animation: s .7s linear infinite
+    }
+
+    @keyframes s {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    p {
+      margin-top: 20px;
+      color: #8690b5;
+      font-size: 14px
+    }
+
+    .ok {
+      color: #51cf66;
+      font-size: 18px;
+      font-weight: 700
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <div class="spin" id="spinner"></div>
+    <p id="msg">Completing login…</p>
+  </div>
+  <script>
+    async function verify() {
+      try {
+        const r = await fetch((window.INSIGHTA_API_URL || '') + '/auth/me', {
+          credentials: 'include',
+          headers: { 'X-API-Version': '1' }
+        });
+        if (r.ok) {
+          const data = await r.json();
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('msg').className = 'ok';
+          document.getElementById('msg').textContent = '✓ Logged in as @' + data.data.username;
+          setTimeout(() => window.location.href = '/', 1000);
+        } else {
+          document.getElementById('msg').textContent = 'Login failed. Redirecting…';
+          setTimeout(() => window.location.href = '/', 2000);
+        }
+      } catch (e) {
+        document.getElementById('msg').textContent = 'Error verifying login. Redirecting…';
+        setTimeout(() => window.location.href = '/', 2000);
+      }
+    }
+    setTimeout(verify, 500);
+  </script>
+</body>
+
+</html>

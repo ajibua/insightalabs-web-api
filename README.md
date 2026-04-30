@@ -30,38 +30,6 @@ A single-page web application for the Insighta Labs+ demographic intelligence pl
 
 All cookies use `SameSite=None; Secure` for cross-origin compatibility between the Vercel-hosted portal and Railway-hosted backend.
 
-## Setup & Deployment
-
-### Local development
-
-```bash
-# Serve with any static file server:
-python -m http.server 3000
-```
-
-Update the API URL in `index.html` and `callback.html`:
-```html
-<script>
-  window.INSIGHTA_API_URL = 'https://your-backend.up.railway.app';
-</script>
-```
-
-### Deploy to Vercel / Netlify / GitHub Pages
-
-1. Push repo to GitHub
-2. Connect to Vercel or Netlify
-3. Set build output to root `/`
-4. Update `window.INSIGHTA_API_URL` to your production backend URL
-
-### Backend configuration
-
-Set these in the backend `.env`:
-```
-FRONTEND_URL=https://your-portal.vercel.app
-GITHUB_REDIRECT_URI=https://your-backend.up.railway.app/auth/github/callback
-COOKIE_SECURE=true
-COOKIE_SAMESITE=none
-```
 
 ## File Structure
 

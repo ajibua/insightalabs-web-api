@@ -160,9 +160,14 @@
         <div id="page-profiles" class="page">
           <div class="section-header" style="margin-bottom:16px">
             <span class="section-title">All Profiles</span>
-            <button class="btn btn-ghost" onclick="exportCSV()">
-              ↓ Export CSV
-            </button>
+            <div style="display:flex;gap:8px">
+              <button id="btn-create-profile" class="btn btn-primary hidden" onclick="openCreateModal()">
+                + Create Profile
+              </button>
+              <button class="btn btn-ghost" onclick="exportCSV()">
+                ↓ Export CSV
+              </button>
+            </div>
           </div>
 
           <!-- Filters -->
@@ -211,6 +216,7 @@
                     <th>Country</th>
                     <th>G.Prob</th>
                     <th>C.Prob</th>
+                    <th id="profiles-actions-th" class="hidden">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="profiles-body">
@@ -285,6 +291,30 @@
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
+
+  <!-- ── CREATE PROFILE MODAL (admin only) ─────────────────────────────── -->
+  <div id="create-modal-backdrop" class="modal-backdrop hidden" onclick="closeCreateModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">Create Profile</span>
+        <button class="modal-close" onclick="closeCreateModal()">✕</button>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+        Enter a full name — Insighta will look up gender, age, and nationality automatically.
+      </p>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Full Name</label>
+        <input id="create-name-input" class="filter-input" style="width:100%;box-sizing:border-box"
+          placeholder="e.g. Amara Okafor"
+          onkeydown="if(event.key==='Enter') submitCreateProfile()" />
+      </div>
+      <div id="create-modal-error" style="display:none;color:#ff6b6b;font-size:13px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeCreateModal()">Cancel</button>
+        <button id="create-submit-btn" class="btn btn-primary" onclick="submitCreateProfile()">Create</button>
+      </div>
+    </div>
+  </div>
 
   <script src="static/js/app.js"></script>
   <script>

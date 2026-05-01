@@ -85,6 +85,11 @@ function renderUser() {
     document.getElementById('topbar-avatar').src = u.avatar_url;
     document.getElementById('topbar-avatar').classList.remove('hidden');
   }
+  // Reveal admin-only UI
+  if (u.role === 'admin') {
+    document.getElementById('btn-create-profile')?.classList.remove('hidden');
+    document.getElementById('profiles-actions-th')?.classList.remove('hidden');
+  }
 }
 
 function showLogin() {
@@ -297,10 +302,12 @@ function loadAccount() {
 }
 
 // ── Render helpers ────────────────────────────────────────────────────────────
-function renderProfileTable(tbodyId, profiles, clickable = false) {
+function renderProfileTable(tbodyId, profiles, showActions = false) {
   const tbody = document.getElementById(tbodyId);
+  const isAdmin = state.user?.role === 'admin';
+  const colSpan = (showActions && isAdmin) ? 8 : 7;
   if (!profiles || !profiles.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty">No profiles found.</div></td></tr>';
+    tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="empty">No profiles found.</div></td></tr>`;
     return;
   }
   tbody.innerHTML = profiles.map(p => `
@@ -312,6 +319,7 @@ function renderProfileTable(tbodyId, profiles, clickable = false) {
       <td>${esc(p.country_name)} <span style="color:var(--muted)">(${p.country_id})</span></td>
       <td>${p.gender_probability.toFixed(2)}</td>
       <td>${p.country_probability.toFixed(2)}</td>
+      ${showActions && isAdmin ? `<td><button class="btn btn-danger btn-sm" onclick="deleteProfile('${p.id}', '${esc(p.name)}')">Delete</button></td>` : ''}
     </tr>`).join('');
 }
 
@@ -376,6 +384,80 @@ function esc(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// ── Admin: Create Profile ───────────────────────────────────────────────────
+function openCreateModal() {
+  document.getElementById('create-name-input').value = '';
+  document.getElementById('create-modal-error').style.display = 'none';
+  document.getElementById('create-submit-btn').disabled = false;
+  document.getElementById('create-submit-btn').textContent = 'Create';
+  document.getElementById('create-modal-backdrop').classList.remove('hidden');
+  setTimeout(() => document.getElementById('create-name-input').focus(), 50);
+}
+
+function closeCreateModal() {
+  document.getElementById('create-modal-backdrop').classList.add('hidden');
+}
+
+async function submitCreateProfile() {
+  const name = document.getElementById('create-name-input').value.trim();
+  const errEl = document.getElementById('create-modal-error');
+  const btn = document.getElementById('create-submit-btn');
+  if (!name) {
+    errEl.textContent = 'Please enter a name.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  const res = await apiFetch('/api/profiles', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Create';
+
+  if (!res) return;
+  if (res.status === 409) {
+    errEl.textContent = 'A profile with that name already exists.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (res.status === 403) {
+    errEl.textContent = 'Admin access required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    errEl.textContent = body.detail || body.message || 'Failed to create profile.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  closeCreateModal();
+  showToast(`Profile created!`, 'success');
+  state.profilesPage = 1;
+  loadProfiles();
+}
+
+// ── Admin: Delete Profile ───────────────────────────────────────────────────
+async function deleteProfile(id, name) {
+  if (!confirm(`Delete profile "${name}"? This cannot be undone.`)) return;
+  const res = await apiFetch(`/api/profiles/${id}`, { method: 'DELETE' });
+  if (!res) return;
+  if (res.ok) {
+    showToast(`"${name}" deleted.`, 'success');
+    loadProfiles();
+  } else {
+    const body = await res.json().catch(() => ({}));
+    showToast(body.detail || 'Delete failed.', 'error');
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

@@ -28,7 +28,7 @@ A single-page web application for the Insighta Labs+ demographic intelligence pl
 | `refresh_token` | HTTP-only cookie | No |
 | `csrf_token` | Regular cookie | Yes (needed for CSRF header) |
 
-All cookies use `SameSite=None; Secure` for cross-origin compatibility between the Vercel-hosted portal and Railway-hosted backend.
+All cookies use `SameSite=None; Secure` for cross-origin compatibility between the Vercel-hosted portal and Fly.io-hosted backend.
 
 
 ## File Structure
